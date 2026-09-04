@@ -5,13 +5,17 @@ fal.config({
 });
 
 const BACKGROUND_FILENAME = "background.jpg";
-const MODEL_ID = "fal-ai/qwen-image-edit-plus-lora-gallery/integrate-product";
+const MODEL_ID = "fal-ai/flux-pro/kontext/max/multi";
 
+// Az image_urls sorrendje számít: az első a háttér, a második az autó.
+// A promptban erre hivatkozunk "az első kép" / "a második kép" formában.
 const PROMPT =
-  "Blend and integrate the car from the second image into the background " +
-  "scene from the first image, with correct perspective, scale, ground " +
-  "contact shadow, and matching lighting so it looks like the car is " +
-  "really parked there.";
+  "Take the exact background scene from the first image, unchanged. " +
+  "Place the car from the second image into that scene so it looks " +
+  "naturally parked there: match the perspective, scale and camera angle " +
+  "of the background, match the lighting and color tone of the scene, " +
+  "and add a realistic contact shadow under the car. Do not alter the " +
+  "background itself.";
 
 // Ez a funkció csak ELINDÍTJA a generálást a fal.ai sorában, és azonnal
 // visszaadja a request ID-t. Nem várja meg a végeredményt, ezért nem tud

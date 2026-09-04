@@ -4,7 +4,7 @@ fal.config({
   credentials: process.env.FAL_KEY,
 });
 
-const MODEL_ID = "fal-ai/qwen-image-edit-plus-lora-gallery/integrate-product";
+const MODEL_ID = "fal-ai/flux-pro/kontext/max/multi";
 
 // A böngésző ezt hívja néhány másodpercenként, amíg a generálás el nem
 // készül. Minden hívás gyors (csak lekérdez, nem vár), így sosem fut
