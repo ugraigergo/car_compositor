@@ -283,33 +283,35 @@
     statusEl.innerHTML = '<span class="spinner"></span>Kép feldolgozása…';
 
     try {
-      const dataUrl = await readAsDataUrl(file);
+const dataUrl = await readAsDataUrl(file);
       const img = await loadImage(dataUrl);
 
-      // Újrarajzoljuk a képet egy canvasra, és onnan mentjük JPEG-ként.
-      // A Safari natívan meg tudja jeleníteni a HEIC képeket egy <img>
-      // elemben (ezért töltődik be itt is), a canvas.toBlob viszont
-      // mindig sima, mindenhol támogatott JPEG-et ad vissza — így ez
-      // minden bemeneti formátumra (HEIC, PNG, JPEG…) egységesen működik.
-const MAX_SIZE = 1920; // Maximum szélesség vagy magasság
-let width = img.naturalWidth;
-let height = img.naturalHeight;
+      // Maximális méret beállítása
+      const MAX_SIZE = 1920;
+      let width = img.naturalWidth;
+      let height = img.naturalHeight;
 
-// Arányos kicsinyítés, ha a kép túl nagy
-if (width > MAX_SIZE || height > MAX_SIZE) {
-  const ratio = Math.min(MAX_SIZE / width, MAX_SIZE / height);
-  width = Math.round(width * ratio);
-  height = Math.round(height * ratio);
-}
+      // Arányos kicsinyítés, ha a kép nagyobb a megengedettnél
+      if (width > MAX_SIZE || height > MAX_SIZE) {
+        if (width > height) {
+          height = Math.round((height * MAX_SIZE) / width);
+          width = MAX_SIZE;
+        } else {
+          width = Math.round((width * MAX_SIZE) / height);
+          height = MAX_SIZE;
+        }
+      }
 
-const canvas = document.createElement('canvas');
-canvas.width = width;
-canvas.height = height;
-// Rajzolás az új, kisebb méretekkel
-canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      
+      // Kép kirajzolása az új, kisebb méretben
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
 
       const jpegBlob = await new Promise((resolve) => {
-        canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.92);
+        // Tömörítési arány egy picit lejjebb véve (0.85) a biztonság kedvéért
+        canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.85); 
       });
 
       if (!jpegBlob) {
