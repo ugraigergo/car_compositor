@@ -295,13 +295,13 @@
 
     generateBtn.disabled = true;
     statusEl.classList.remove('error');
-    statusEl.innerHTML = '<span class="spinner"></span>Ez eltarthat egy percig…';
+    statusEl.innerHTML = '<span class="spinner"></span>Feltöltés…';
     result.classList.remove('show');
 
     try {
       const base64 = await fileToBase64(selectedFile);
 
-      const res = await fetch('/api/generate', {
+      const startRes = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -310,14 +310,19 @@
         }),
       });
 
-      const data = await res.json();
+      const startData = await startRes.json();
 
-      if (!res.ok) {
-        throw new Error(data.error || 'Ismeretlen hiba történt.');
+      if (!startRes.ok) {
+        throw new Error(startData.error || 'Ismeretlen hiba történt.');
       }
 
-      resultImg.src = data.imageUrl;
-      downloadLink.href = data.imageUrl;
+      const { requestId } = startData;
+      statusEl.innerHTML = '<span class="spinner"></span>Készül a kép…';
+
+      const imageUrl = await pollUntilDone(requestId);
+
+      resultImg.src = imageUrl;
+      downloadLink.href = imageUrl;
       result.classList.add('show');
       statusEl.textContent = '';
     } catch (err) {
@@ -327,6 +332,27 @@
       generateBtn.disabled = false;
     }
   });
+
+  async function pollUntilDone(requestId) {
+    // Legfeljebb kb. 5 percig kérdezgetjük 3 másodpercenként.
+    const maxAttempts = 100;
+    for (let i = 0; i < maxAttempts; i++) {
+      await new Promise((r) => setTimeout(r, 3000));
+
+      const res = await fetch(`/api/status?requestId=${encodeURIComponent(requestId)}`);
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Hiba történt az állapot lekérdezésekor.');
+      }
+
+      if (data.status === 'COMPLETED') {
+        return data.imageUrl;
+      }
+      // egyébként IN_QUEUE vagy IN_PROGRESS -> folytatjuk a várakozást
+    }
+    throw new Error('Túl sokáig tartott a generálás, próbáld újra.');
+  }
 
   function fileToBase64(file) {
     return new Promise((resolve, reject) => {
