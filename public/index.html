@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Autó a helyszínen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --paper: #E9E4DC;
+    --paper-dark: #DCD5C9;
+    --ink: #23303A;
+    --ink-soft: #56636C;
+    --teal: #3D6B63;
+    --teal-dark: #2C4E48;
+    --rust: #B5533C;
+    --card: #F5F2EC;
+    --radius: 14px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter', system-ui, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  main {
+    width: 100%;
+    max-width: 460px;
+  }
+
+  h1 {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 1.15;
+    margin: 0 0 8px;
+    color: var(--ink);
+  }
+
+  p.lead {
+    margin: 0 0 28px;
+    color: var(--ink-soft);
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  .dropzone {
+    background: var(--card);
+    border: 1.5px dashed #B9AF9C;
+    border-radius: var(--radius);
+    padding: 28px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+
+  .dropzone:hover,
+  .dropzone.drag {
+    border-color: var(--teal);
+    background: #F0EEE6;
+  }
+
+  .dropzone svg {
+    width: 30px;
+    height: 30px;
+    color: var(--teal);
+    margin-bottom: 10px;
+  }
+
+  .dropzone-text {
+    font-size: 15px;
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  .dropzone-sub {
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-top: 4px;
+  }
+
+  input[type="file"] { display: none; }
+
+  .preview-wrap {
+    margin-top: 16px;
+    display: none;
+  }
+
+  .preview-wrap.show { display: block; }
+
+  .preview-wrap img {
+    width: 100%;
+    border-radius: var(--radius);
+    display: block;
+  }
+
+  .change-link {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--teal-dark);
+    text-decoration: underline;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: inherit;
+  }
+
+  button.primary {
+    width: 100%;
+    margin-top: 20px;
+    background: var(--teal);
+    color: #F5F2EC;
+    border: none;
+    border-radius: var(--radius);
+    padding: 15px;
+    font-size: 16px;
+    font-weight: 600;
+    font-family: 'Inter', system-ui, sans-serif;
+    cursor: pointer;
+    transition: background 0.15s ease, opacity 0.15s ease;
+  }
+
+  button.primary:hover:not(:disabled) { background: var(--teal-dark); }
+
+  button.primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .status {
+    margin-top: 14px;
+    font-size: 14px;
+    color: var(--ink-soft);
+    text-align: center;
+    min-height: 20px;
+  }
+
+  .status.error { color: var(--rust); }
+
+  .result {
+    margin-top: 22px;
+    display: none;
+  }
+
+  .result.show { display: block; }
+
+  .result img {
+    width: 100%;
+    border-radius: var(--radius);
+    display: block;
+    box-shadow: 0 6px 24px rgba(35, 48, 58, 0.14);
+  }
+
+  .result-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  .result-actions a,
+  .result-actions button {
+    flex: 1;
+    text-align: center;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    font-family: inherit;
+    cursor: pointer;
+  }
+
+  .result-actions a {
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+  }
+
+  .result-actions button {
+    background: transparent;
+    color: var(--ink);
+    border: 1.5px solid #B9AF9C;
+  }
+
+  .spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #B9AF9C;
+    border-top-color: var(--teal);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+    margin-right: 8px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+  <main>
+    <h1>Tedd ki az autót a helyszínre</h1>
+    <p class="lead">Töltsd fel az autó fotóját, a többit intézzük.</p>
+
+    <div class="dropzone" id="dropzone">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+        <path d="M12 16V4M12 4L7 9M12 4l5 5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div class="dropzone-text">Koppints ide az autó fotójáért</div>
+      <div class="dropzone-sub">JPG vagy PNG</div>
+    </div>
+    <input type="file" id="fileInput" accept="image/*" />
+
+    <div class="preview-wrap" id="previewWrap">
+      <img id="previewImg" alt="Kiválasztott autó" />
+      <button class="change-link" id="changeBtn">Másik kép választása</button>
+    </div>
+
+    <button class="primary" id="generateBtn" disabled>Autó a helyszínre</button>
+    <div class="status" id="status"></div>
+
+    <div class="result" id="result">
+      <img id="resultImg" alt="Elkészült kép" />
+      <div class="result-actions">
+        <a id="downloadLink" download="auto-a-helyszinen.jpg">Letöltés</a>
+        <button id="tryAgainBtn">Új próba</button>
+      </div>
+    </div>
+  </main>
+
+<script>
+  const dropzone = document.getElementById('dropzone');
+  const fileInput = document.getElementById('fileInput');
+  const previewWrap = document.getElementById('previewWrap');
+  const previewImg = document.getElementById('previewImg');
+  const changeBtn = document.getElementById('changeBtn');
+  const generateBtn = document.getElementById('generateBtn');
+  const statusEl = document.getElementById('status');
+  const result = document.getElementById('result');
+  const resultImg = document.getElementById('resultImg');
+  const downloadLink = document.getElementById('downloadLink');
+  const tryAgainBtn = document.getElementById('tryAgainBtn');
+
+  let selectedFile = null;
+
+  dropzone.addEventListener('click', () => fileInput.click());
+
+  fileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) handleFile(file);
+  });
+
+  changeBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    fileInput.value = '';
+    selectedFile = null;
+    previewWrap.classList.remove('show');
+    dropzone.style.display = 'block';
+    generateBtn.disabled = true;
+  });
+
+  tryAgainBtn.addEventListener('click', () => {
+    result.classList.remove('show');
+    statusEl.textContent = '';
+  });
+
+  function handleFile(file) {
+    selectedFile = file;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      previewImg.src = e.target.result;
+      previewWrap.classList.add('show');
+      dropzone.style.display = 'none';
+      generateBtn.disabled = false;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  generateBtn.addEventListener('click', async () => {
+    if (!selectedFile) return;
+
+    generateBtn.disabled = true;
+    statusEl.classList.remove('error');
+    statusEl.innerHTML = '<span class="spinner"></span>Ez eltarthat egy percig…';
+    result.classList.remove('show');
+
+    try {
+      const base64 = await fileToBase64(selectedFile);
+
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          image: base64,
+          mimeType: selectedFile.type || 'image/jpeg',
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Ismeretlen hiba történt.');
+      }
+
+      resultImg.src = data.imageUrl;
+      downloadLink.href = data.imageUrl;
+      result.classList.add('show');
+      statusEl.textContent = '';
+    } catch (err) {
+      statusEl.textContent = err.message || 'Hiba történt, próbáld újra.';
+      statusEl.classList.add('error');
+    } finally {
+      generateBtn.disabled = false;
+    }
+  });
+
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result;
+        const base64 = result.split(',')[1];
+        resolve(base64);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+</script>
+</body>
+</html>

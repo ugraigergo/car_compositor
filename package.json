@@ -1,0 +1,9 @@
+{
+  "name": "car-compositor",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Egy kép feltöltése -> az autó automatikusan bekerül egy fix háttérképbe (fal.ai)",
+  "dependencies": {
+    "@fal-ai/client": "^1.2.0"
+  }
+}
