@@ -40,9 +40,11 @@ export default async function handler(req, res) {
       return;
     }
 
-    const buffer = Buffer.from(image, "base64");
+   /* const buffer = Buffer.from(image, "base64");
     const blob = new Blob([buffer], { type: mimeType || "image/jpeg" });
-    const carImageUrl = await fal.storage.upload(blob);
+    const carImageUrl = await fal.storage.upload(blob);*/
+
+    const carImageUrl = `data:${mimeType || "image/jpeg"};base64,${image}`;
 
     const protocol = req.headers["x-forwarded-proto"] || "https";
     const host = req.headers["host"];
