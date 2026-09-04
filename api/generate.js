@@ -5,17 +5,16 @@ fal.config({
 });
 
 const BACKGROUND_FILENAME = "background.jpg";
-const MODEL_ID = "fal-ai/flux-pro/kontext/max/multi";
+const MODEL_ID = "fal-ai/nano-banana/edit";
 
-// Az image_urls sorrendje számít: az első a háttér, a második az autó.
-// A promptban erre hivatkozunk "az első kép" / "a második kép" formában.
+// Az image_urls sorrendje: első a háttér, második az autó.
 const PROMPT =
-  "Take the exact background scene from the first image, unchanged. " +
-  "Place the car from the second image into that scene so it looks " +
-  "naturally parked there: match the perspective, scale and camera angle " +
-  "of the background, match the lighting and color tone of the scene, " +
-  "and add a realistic contact shadow under the car. Do not alter the " +
-  "background itself.";
+  "Using the first image as the exact background scene, place the car " +
+  "from the second image into that scene as if it is really parked " +
+  "there. Keep the background completely unchanged. Match the car's " +
+  "perspective, scale and camera angle to the background, adjust its " +
+  "lighting to match the scene, and add a realistic contact shadow " +
+  "under the wheels.";
 
 // Ez a funkció csak ELINDÍTJA a generálást a fal.ai sorában, és azonnal
 // visszaadja a request ID-t. Nem várja meg a végeredményt, ezért nem tud
