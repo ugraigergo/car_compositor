@@ -291,10 +291,22 @@
       // elemben (ezért töltődik be itt is), a canvas.toBlob viszont
       // mindig sima, mindenhol támogatott JPEG-et ad vissza — így ez
       // minden bemeneti formátumra (HEIC, PNG, JPEG…) egységesen működik.
-      const canvas = document.createElement('canvas');
-      canvas.width = img.naturalWidth;
-      canvas.height = img.naturalHeight;
-      canvas.getContext('2d').drawImage(img, 0, 0);
+const MAX_SIZE = 1920; // Maximum szélesség vagy magasság
+let width = img.naturalWidth;
+let height = img.naturalHeight;
+
+// Arányos kicsinyítés, ha a kép túl nagy
+if (width > MAX_SIZE || height > MAX_SIZE) {
+  const ratio = Math.min(MAX_SIZE / width, MAX_SIZE / height);
+  width = Math.round(width * ratio);
+  height = Math.round(height * ratio);
+}
+
+const canvas = document.createElement('canvas');
+canvas.width = width;
+canvas.height = height;
+// Rajzolás az új, kisebb méretekkel
+canvas.getContext('2d').drawImage(img, 0, 0, width, height);
 
       const jpegBlob = await new Promise((resolve) => {
         canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.92);
