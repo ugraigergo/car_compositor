@@ -4,14 +4,15 @@ import { fal } from "@fal-ai/client";
 // Fontos: Ugyanennek kell lennie a status.js-ben is!
 const MODEL_ID = "fal-ai/nano-banana-pro/edit";
 const BACKGROUND_URL = "https://carcompositorweb.vercel.app/background.jpg";
+const PLATE_URL = "https://carcompositorweb.vercel.app/plate.jpg";
 
 const PROMPT =
   "Composite the exact car from the second image onto the background of the first image. " +
-  "CRITICAL: You must preserve the car exactly as it is with 100% fidelity. " +
-  "Do not redraw, alter, or hallucinate any details of the car. " +
-  "Keep the exact original license plate text, wheels, rims, proportions, and body shapes. " +
-  "Your ONLY job is to extract the car, place it on the background, match the ambient lighting, " +
-  "and generate realistic contact shadows under the tires.";
+  "CRITICAL INSTRUCTIONS: " +
+  "1. Preserve the car's structural details perfectly. " +
+  "2. The THIRD image is a custom dealer license plate cover. You MUST replace the car's original front license plate perfectly with the exact design from this third image. Fit it seamlessly onto the bumper. " +
+  "3. Update the reflections on the car's paint to match the new background environment. " +
+  "4. Generate extremely realistic contact shadows under the tires.";
 
 function validateFalKey(key) {
   if (!key) return "Hiányzik a FAL_KEY környezeti változó a szerveren.";
@@ -51,9 +52,9 @@ export default async function handler(req, res) {
     // így elkerüljük a fal.storage.upload és Blob okozta pattern hibákat.
     const carImageUrl = `data:${mimeType || "image/jpeg"};base64,${image}`;
 
-    const { request_id } = await fal.queue.submit(MODEL_ID, {
+const { request_id } = await fal.queue.submit(MODEL_ID, {
       input: {
-        image_urls: [BACKGROUND_URL, carImageUrl],
+        image_urls: [BACKGROUND_URL, carImageUrl, PLATE_URL],
         prompt: PROMPT,
       },
     });
