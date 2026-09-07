@@ -5,7 +5,7 @@ fal.config({
 });
 
 // ENNEK PONTOSAN MEG KELL EGYEZNIE A generate.js-BEN LÉVŐVEL!
-const MODEL_ID = "fal-ai/nano-banana/edit";
+const MODEL_ID = "fal-ai/nano-banana-pro/edit";
 
 export default async function handler(req, res) {
   if (req.method !== "GET") {

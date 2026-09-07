@@ -2,7 +2,7 @@ import { fal } from "@fal-ai/client";
 
 // IDE ÍRD A HASZNÁLNI KÍVÁNT MODELL PONTOS NEVÉT!
 // Fontos: Ugyanennek kell lennie a status.js-ben is!
-const MODEL_ID = "fal-ai/nano-banana/edit";
+const MODEL_ID = "fal-ai/nano-banana-pro/edit";
 const BACKGROUND_URL = "https://carcompositorweb.vercel.app/background.jpg";
 
 const PROMPT =
