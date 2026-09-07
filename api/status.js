@@ -4,11 +4,9 @@ fal.config({
   credentials: process.env.FAL_KEY,
 });
 
-const MODEL_ID = "fal-ai/flux-pro/kontext/max/multi";
+// ENNEK PONTOSAN MEG KELL EGYEZNIE A generate.js-BEN LÉVŐVEL!
+const MODEL_ID = "fal-ai/nano-banana/edit";
 
-// A böngésző ezt hívja néhány másodpercenként, amíg a generálás el nem
-// készül. Minden hívás gyors (csak lekérdez, nem vár), így sosem fut
-// bele a Vercel időkorlátjába.
 export default async function handler(req, res) {
   if (req.method !== "GET") {
     res.status(405).json({ error: "Csak GET kérést fogadok." });
