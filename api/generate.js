@@ -6,12 +6,12 @@ const MODEL_ID = "fal-ai/nano-banana-pro/edit";
 const BACKGROUND_URL = "https://carcompositorweb.vercel.app/background.jpg";
 
 const PROMPT =
-  "Using the first image as the exact background scene, place the car " +
-  "from the second image into that scene as if it is really parked " +
-  "there. Keep the background completely unchanged. Match the car's " +
-  "perspective, scale and camera angle to the background, adjust its " +
-  "lighting to match the scene, and add a realistic contact shadow " +
-  "under the wheels.";
+  "Composite the exact car from the second image onto the background of the first image. " +
+  "CRITICAL: You must preserve the car exactly as it is with 100% fidelity. " +
+  "Do not redraw, alter, or hallucinate any details of the car. " +
+  "Keep the exact original license plate text, wheels, rims, proportions, and body shapes. " +
+  "Your ONLY job is to extract the car, place it on the background, match the ambient lighting, " +
+  "and generate realistic contact shadows under the tires.";
 
 function validateFalKey(key) {
   if (!key) return "Hiányzik a FAL_KEY környezeti változó a szerveren.";
