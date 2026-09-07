@@ -8,11 +8,10 @@ const PLATE_URL = "https://carcompositorweb.vercel.app/plate.jpg";
 
 const PROMPT =
   "Composite the exact car from the second image onto the background of the first image. " +
-  "CRITICAL INSTRUCTIONS: " +
-  "1. Preserve the car's structural details perfectly. " +
-  "2. The THIRD image is a custom dealer license plate cover. You MUST replace the car's original front license plate perfectly with the exact design from this third image. Fit it seamlessly onto the bumper. " +
-  "3. Update the reflections on the car's paint to match the new background environment. " +
-  "4. Generate extremely realistic contact shadows under the tires.";
+  "CRITICAL RULES YOU MUST FOLLOW: " +
+  "1. ZERO ROTATION: Do not change the car's perspective, pose, or camera angle. The car must face the exact same direction as the original input. " +
+  "2. 100% FIDELITY: Preserve the exact front grille (including the center logo), headlights, rims, and body shape. Do not hallucinate or alter any structural details. " +
+  "3. LICENSE PLATE: The THIRD image is a custom dealer plate. Perfectly replace the original front license plate with this exact third image. ";
 
 function validateFalKey(key) {
   if (!key) return "Hiányzik a FAL_KEY környezeti változó a szerveren.";
