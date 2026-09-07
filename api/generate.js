@@ -55,6 +55,7 @@ const { request_id } = await fal.queue.submit(MODEL_ID, {
       input: {
         image_urls: [BACKGROUND_URL, carImageUrl, PLATE_URL],
         prompt: PROMPT,
+        image_size: "landscape_4_3"
       },
     });
 
