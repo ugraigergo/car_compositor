@@ -11,7 +11,8 @@ const PROMPT =
   "CRITICAL RULES YOU MUST FOLLOW: " +
   "1. ZERO ROTATION: Do not change the car's perspective, pose, or camera angle. The car must face the exact same direction as the original input. " +
   "2. 100% FIDELITY: Preserve the exact front grille (including the center logo), headlights, rims, and body shape. Do not hallucinate or alter any structural details. " +
-  "3. LICENSE PLATE: The THIRD image is a custom dealer plate. Perfectly replace the original front license plate with this exact third image. ";
+  "3. LICENSE PLATE: The THIRD image is a custom dealer plate. Perfectly replace the original front license plate with this exact third image. "+
+  "4. IMAGE SIZE: The final image size has to be 4:3 landscape";
 
 function validateFalKey(key) {
   if (!key) return "Hiányzik a FAL_KEY környezeti változó a szerveren.";
