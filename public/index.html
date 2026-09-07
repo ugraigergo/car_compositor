@@ -221,7 +221,7 @@
         <path d="M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
       <div class="dropzone-text">Koppints ide az autó fotójáért</div>
-      <div class="dropzone-sub">JPG vagy PNG</div>
+      <div class="dropzone-sub">HEIC, JPG vagy PNG</div>
     </div>
     <input type="file" id="fileInput" accept="image/*" />
 
@@ -283,15 +283,16 @@
     statusEl.innerHTML = '<span class="spinner"></span>Kép feldolgozása…';
 
     try {
-const dataUrl = await readAsDataUrl(file);
+      const dataUrl = await readAsDataUrl(file);
       const img = await loadImage(dataUrl);
 
-      // Maximális méret beállítása
-      const MAX_SIZE = 1920;
+      // Nagy telefonfotóknál (10+ megapixel) fölösleges az eredeti
+      // méretet elküldeni, ez csak lassítja a feltöltést. 1600px a
+      // hosszabbik oldalon bőven elég a jó minőségű eredményhez.
+      const MAX_SIZE = 1600;
       let width = img.naturalWidth;
       let height = img.naturalHeight;
 
-      // Arányos kicsinyítés, ha a kép nagyobb a megengedettnél
       if (width > MAX_SIZE || height > MAX_SIZE) {
         if (width > height) {
           height = Math.round((height * MAX_SIZE) / width);
@@ -302,16 +303,18 @@ const dataUrl = await readAsDataUrl(file);
         }
       }
 
+      // Újrarajzoljuk a képet egy canvasra, és onnan mentjük JPEG-ként.
+      // A Safari natívan meg tudja jeleníteni a HEIC képeket egy <img>
+      // elemben (ezért töltődik be itt is), a canvas.toBlob viszont
+      // mindig sima, mindenhol támogatott JPEG-et ad vissza — így ez
+      // minden bemeneti formátumra (HEIC, PNG, JPEG…) egységesen működik.
       const canvas = document.createElement('canvas');
       canvas.width = width;
       canvas.height = height;
-      
-      // Kép kirajzolása az új, kisebb méretben
       canvas.getContext('2d').drawImage(img, 0, 0, width, height);
 
       const jpegBlob = await new Promise((resolve) => {
-        // Tömörítési arány egy picit lejjebb véve (0.85) a biztonság kedvéért
-        canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.85); 
+        canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.9);
       });
 
       if (!jpegBlob) {
@@ -368,7 +371,7 @@ const dataUrl = await readAsDataUrl(file);
         }),
       });
 
-      const startData = await startRes.json();
+      const startData = await parseJsonResponse(startRes);
 
       if (!startRes.ok) {
         throw new Error(startData.error || 'Ismeretlen hiba történt.');
@@ -398,7 +401,7 @@ const dataUrl = await readAsDataUrl(file);
       await new Promise((r) => setTimeout(r, 3000));
 
       const res = await fetch(`/api/status?requestId=${encodeURIComponent(requestId)}`);
-      const data = await res.json();
+      const data = await parseJsonResponse(res);
 
       if (!res.ok) {
         throw new Error(data.error || 'Hiba történt az állapot lekérdezésekor.');
@@ -410,6 +413,18 @@ const dataUrl = await readAsDataUrl(file);
       // egyébként IN_QUEUE vagy IN_PROGRESS -> folytatjuk a várakozást
     }
     throw new Error('Túl sokáig tartott a generálás, próbáld újra.');
+  }
+
+  // Ha a szerver valamiért nem érvényes JSON-t ad vissza (pl. a Vercel
+  // saját hibaoldalát), ne egy kriptikus JS hibát kapjunk, hanem a
+  // tényleges választ szövegként, hogy lássuk mi történt.
+  async function parseJsonResponse(res) {
+    const text = await res.text();
+    try {
+      return JSON.parse(text);
+    } catch {
+      return { error: text.slice(0, 300) || `Váratlan válasz (${res.status}).` };
+    }
   }
 
   function fileToBase64(file) {

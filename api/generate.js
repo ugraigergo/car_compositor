@@ -1,9 +1,5 @@
 import { fal } from "@fal-ai/client";
 
-fal.config({
-  credentials: process.env.FAL_KEY,
-});
-
 const BACKGROUND_FILENAME = "background.jpg";
 const MODEL_ID = "fal-ai/nano-banana/edit";
 
@@ -16,6 +12,26 @@ const PROMPT =
   "lighting to match the scene, and add a realistic contact shadow " +
   "under the wheels.";
 
+// A fal.ai kulcsnak "azonosító:titok" formátumúnak kell lennie.
+// Ha ez hibás (pl. csak az egyik fele lett bemásolva, vagy van benne
+// szóköz/idézőjel), pontosan ezt kapjuk: "The string did not match the
+// expected pattern." Ezt itt előre ellenőrizzük, hogy egyértelmű,
+// magyar hibaüzenetet kapj helyette.
+function validateFalKey(key) {
+  if (!key) return "Hiányzik a FAL_KEY környezeti változó a szerveren.";
+  const trimmed = key.trim();
+  if (trimmed !== key) {
+    return "A FAL_KEY elején vagy végén szóköz/sortörés van, távolítsd el.";
+  }
+  if (!/^[^:\s]+:[^:\s]+$/.test(trimmed)) {
+    return "A FAL_KEY formátuma hibás. A fal.ai kulcsnak 'azonosító:titok' " +
+      "formátumúnak kell lennie, egy kettősponttal. Ellenőrizd a " +
+      "fal.ai/dashboard/keys oldalon, hogy a TELJES kulcsot másoltad-e be, " +
+      "és a Vercel Environment Variables-be nem került bele idézőjel.";
+  }
+  return null;
+}
+
 // Ez a funkció csak ELINDÍTJA a generálást a fal.ai sorában, és azonnal
 // visszaadja a request ID-t. Nem várja meg a végeredményt, ezért nem tud
 // időtúllépésbe futni, akármeddig tart a tényleges kép elkészítése.
@@ -25,12 +41,15 @@ export default async function handler(req, res) {
     return;
   }
 
-  if (!process.env.FAL_KEY) {
-    res.status(500).json({
-      error: "Hiányzik a FAL_KEY környezeti változó a szerveren.",
-    });
+  const keyError = validateFalKey(process.env.FAL_KEY);
+  if (keyError) {
+    res.status(500).json({ error: keyError });
     return;
   }
+
+  fal.config({
+    credentials: process.env.FAL_KEY,
+  });
 
   try {
     const { image, mimeType } = req.body || {};
@@ -40,11 +59,9 @@ export default async function handler(req, res) {
       return;
     }
 
-   /* const buffer = Buffer.from(image, "base64");
+    const buffer = Buffer.from(image, "base64");
     const blob = new Blob([buffer], { type: mimeType || "image/jpeg" });
-    const carImageUrl = await fal.storage.upload(blob);*/
-
-    const carImageUrl = `data:${mimeType || "image/jpeg"};base64,${image}`;
+    const carImageUrl = await fal.storage.upload(blob);
 
     const protocol = req.headers["x-forwarded-proto"] || "https";
     const host = req.headers["host"];
@@ -60,7 +77,11 @@ export default async function handler(req, res) {
     res.status(200).json({ requestId: request_id });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Hiba történt a generálás indításakor." });
+    // A pontos hibát is visszaadjuk, hogy ne kelljen a Vercel logokban
+    // keresgélni minden alkalommal.
+    res.status(500).json({
+      error: `Hiba történt a generálás indításakor: ${err.message || err}`,
+    });
   }
 }
 
